@@ -1,52 +1,127 @@
-from flask import Flask, redirect, render_template, request,session, url_for
+from flask import Flask, redirect, render_template, request, session, url_for
+from flask_sqlalchemy import SQLAlchemy
 from random import randint as rd
 from dotenv import load_dotenv
-import os
+import os, datetime
+
 load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY']=os.getenv('SECRET_KEY')
-def cvu(uch)->int:
-    cch = rd(1,3)
-    if uch == cch : return -1,cch
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DB_URL')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+
+db = SQLAlchemy(app)
+
+# ---------------- MODEL ----------------
+
+class User(db.Model):
+    ID = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    NAME = db.Column(db.String(50))
+    MOVES = db.Column(db.Integer)
+    SCORE = db.Column(db.Integer)
+    TIME = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+
+# ---------------- GAME LOGIC ----------------
+
+def cvu(uch):
+    cch = rd(1, 3)
+    if uch == cch:
+        return -1, cch   # draw
+    elif (uch == 1 and cch == 2) or (uch == 2 and cch == 3) or (uch == 3 and cch == 1):
+        return 0, cch    # user loses
     else:
-        if ((uch ==1 and cch == 2 ) or (uch ==2 and cch == 3 ) or (uch ==3 and cch ==1 ) ) : return 0,cch
-        else : return 1,cch
+        return 1, cch    # user wins
 
+# ---------------- ROUTES ----------------
 
-@app.route("/",methods=['GET'])
-def hello_world():
-    session['userscore']=0
-    return redirect(url_for('scp'))
+@app.route("/")
+def root():
+    session.clear()
+    return redirect(url_for("scp"))
 
-@app.route('/scp',methods = ['POST','GET'])
+@app.route("/scp", methods=["GET", "POST"])
 def scp():
-    if request.method=='POST':
-        
-        
-        uchval = request.form.get('radioDefault')
+
+    # initialize session values once
+    if "userscore" not in session:
+        session["userscore"] = 0
+    if "moves" not in session:
+        session["moves"] = 0
+
+    if request.method == "POST":
+
+        # win condition
+        if session["userscore"] >= 100:
+            session["won"] = True
+            return render_template("askname.html")
+
+        session["moves"] += 1
+
+        uchval = request.form.get("radioDefault")
         if not uchval:
-            return render_template('SPC.html', ans=4)
-        ch ={'stone':1,'paper':2,'scissor':3}
-        chl=['stone','paper','scissor']
-        uch = ch[uchval]
-        ans = cvu(uch)
-        if session.get('count')==0:
-                session['count']=1
-                session['userscore']=0
-        if ans[0] == 1 or ans[0] == -1:
-            if session.get('count')==0:
-                session['count']=1
-                session['userscore']=0
-                
-            else:
-                session['userscore']=session.get('userscore')+10
-                
-        else:
-            session['userscore']=session.get('userscore')-5
-        
-        return render_template('SPC.html',ans=ans[0],cch=chl[ans[1]-1],uch=chl[uch-1], score = session.get('userscore'))
+            return render_template("SPC.html", ans=4)
+
+        ch = {"stone": 1, "paper": 2, "scissor": 3}
+        chl = ["stone", "paper", "scissor"]
+
+        ans = cvu(ch[uchval])
+
+        # scoring
+        if ans[0] == 1:          # win
+            session["userscore"] += 10
+        elif ans[0] == -1:      # draw
+            session["userscore"] += 10
+        else:                   # lose
+            session["userscore"] -= 5
+
+        return render_template(
+            "SPC.html",
+            ans=ans[0],
+            cch=chl[ans[1]-1],
+            uch=uchval,
+            score=session["userscore"]
+        )
+
+    return render_template("SPC.html", ans=4)
+
+# ---------------- SAVE USER ----------------
+
+@app.route("/askname", methods=["POST"])
+def askname():
+    if session.get("userscore", 0) >= 100:
+        name = request.form.get("name")
+
+        user = User(
+            NAME=name,
+            SCORE=session["userscore"],
+            MOVES=session["moves"]
+        )
+
+        try:
+            db.session.add(user)
+            db.session.commit()
+        except:
+            print("FAILED TO ADD USER")
+
+    return redirect(url_for("leaderboards"))
+
+# ---------------- LEADERBOARD ----------------
+
+@app.route("/leaderboards")
+def leaderboards():
+    lead = User.query.order_by(User.MOVES.asc()).all()
+    return render_template("lead.html", lead=lead)
+
+# ---------------- RESET ----------------
+
+@app.route("/rw")
+def rw():
+    session.pop("won", None)
+    return redirect(url_for("root"))
+
+# ---------------- MAIN ----------------
+
+if __name__ == "__main__":
     
-    return render_template('SPC.html',ans=4)
-if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
