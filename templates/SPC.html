@@ -80,6 +80,7 @@
         {% if ans == 1 %}
             <div class="result-box alert alert-success">
                 <h4>🎉 You Won!</h4>
+                <h3>Your Score {{score}}</h3>
                 <p>You chose: <b>{{ uch }}</b></p>
                 <p>Computer chose: <b>{{ cch }}</b></p>
             </div>
@@ -87,6 +88,7 @@
         {% elif ans == -1 %}
             <div class="result-box alert alert-warning">
                 <h4>😄 It’s a Draw!</h4>
+                <h3>Your Score {{score}}</h3>
                 <p>You chose: <b>{{ uch }}</b></p>
                 <p>Computer chose: <b>{{ cch }}</b></p>
             </div>
@@ -94,6 +96,7 @@
         {% else %}
             <div class="result-box alert alert-danger">
                 <h4>💻 Computer Won!</h4>
+                <h3>Your Score {{score}}</h3>
                 <p>You chose: <b>{{ uch }}</b></p>
                 <p>Computer chose: <b>{{ cch }}</b></p>
             </div>
