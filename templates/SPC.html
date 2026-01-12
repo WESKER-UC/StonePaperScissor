@@ -3,59 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <title>Stone Paper Scissors</title>
+
     <style>
-        form{
-            padding: 50px;
+        body{
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Segoe UI", sans-serif;
+        }
+        .game-card{
+            background: #fff;
+            padding: 30px 35px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .choice-label{
+            font-size: 1.1rem;
+            cursor: pointer;
+        }
+        .btn-play{
+            width: 100%;
+            margin-top: 15px;
+            font-size: 1.1rem;
+        }
+        .result-box{
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
         }
     </style>
-    <title>Stone Paper Scissor</title>
 </head>
 <body>
+
+<div class="game-card">
+
+    <h2 class="text-center mb-3">🎮 Stone Paper Scissors</h2>
+    <p class="text-center text-muted">Choose your move and challenge the computer!</p>
+
     <form action="/scp" method="post">
-        <h3>Enter your choice :</h3>
-    <h4><div class="form-check">
-  <input class="form-check-input" type="radio" name="radioDefault" id="stone" value="stone">
-  <label class="form-check-label" for="radioDefault1">
-    Stone
-  </label>
-</div>
-<div class="form-check">
-  <input class="form-check-input" type="radio" name="radioDefault" id="paper" value="paper">
-  <label class="form-check-label" for="radioDefault1">
-    Paper
-  </label>
-</div>
-<div class="form-check">
-  <input class="form-check-input" type="radio" name="radioDefault" id="scissor" value="scissor">
-  <label class="form-check-label" for="radioDefault1">
-    Scissor
-  </label>
-</div>
-<button type="submit">Play!</button>
 
-</form>
-</h4>
+        <h5 class="mb-2">Your choice:</h5>
 
-{% if ans < 4 %}
-    {% if ans == 1 %}
-        <h2>User Won!</h2>
-        <h2>User Chose : {{ uch }}</h2>
-        <h2>Computer Chose : {{ cch }}</h2>
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="radio" name="radioDefault" id="stone" value="stone" required>
+            <label class="form-check-label choice-label" for="stone">🪨 Stone</label>
+        </div>
 
-    {% elif ans == -1 %}
-        <h2>Both Won!</h2>
-        <h2>User Chose : {{ uch }}</h2>
-        <h2>Computer Chose : {{ cch }}</h2>
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="radio" name="radioDefault" id="paper" value="paper">
+            <label class="form-check-label choice-label" for="paper">📄 Paper</label>
+        </div>
 
-    {% else %}
-        <h2>Computer Won!</h2>
-        <h2>User Chose : {{ uch }}</h2>
-        <h2>Computer Chose : {{ cch }}</h2>
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="radio" name="radioDefault" id="scissor" value="scissor">
+            <label class="form-check-label choice-label" for="scissor">✂️ Scissor</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-play">
+            Play Now 🚀
+        </button>
+
+    </form>
+
+    <!-- RESULT SECTION -->
+    {% if ans < 4 %}
+        {% if ans == 1 %}
+            <div class="result-box alert alert-success">
+                <h4>🎉 You Won!</h4>
+                <p>You chose: <b>{{ uch }}</b></p>
+                <p>Computer chose: <b>{{ cch }}</b></p>
+            </div>
+
+        {% elif ans == -1 %}
+            <div class="result-box alert alert-warning">
+                <h4>😄 It’s a Draw!</h4>
+                <p>You chose: <b>{{ uch }}</b></p>
+                <p>Computer chose: <b>{{ cch }}</b></p>
+            </div>
+
+        {% else %}
+            <div class="result-box alert alert-danger">
+                <h4>💻 Computer Won!</h4>
+                <p>You chose: <b>{{ uch }}</b></p>
+                <p>Computer chose: <b>{{ cch }}</b></p>
+            </div>
+        {% endif %}
     {% endif %}
-{% endif %}
 
-
+</div>
 
 </body>
 </html>
