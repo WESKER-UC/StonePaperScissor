@@ -11,7 +11,7 @@ def cvu(uch)->int:
         else : return 1,cch
 
 
-@app.route("/")
+@app.route("/",methods=['GET'])
 def hello_world():
     return render_template('SPC.html')
 
