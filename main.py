@@ -24,14 +24,34 @@ class User(db.Model):
 
 # ---------------- GAME LOGIC ----------------
 
-def cvu(uch):
-    cch = rd(1, 3)
+
+
+def avg(l:list)->float:
+    return sum(l)/len(l)
+
+
+def cvu(uch,USERCHOICES,moves):
+    
+    USERCHOICES.append(uch)
+    print(f"USCHL : {USERCHOICES}")
+    avguch = int(avg(USERCHOICES))
+    print(f"AVG UCH : {avguch}")
+    posCch = {1:2,2:3,3:1}
+    negCch = {1:1,2:2,3:3}
+    cch = posCch[avguch]
+    var = rd(1,100)
+    
+    if cch == uch:
+        cch = posCch[cch]
+    print(f"CCH : {cch}")
+    if var%moves+1 == 0 :
+        return 1, negCch[cch], USERCHOICES
     if uch == cch:
-        return -1, cch   # draw
+        return -1, cch,  USERCHOICES   # draw
     elif (uch == 1 and cch == 2) or (uch == 2 and cch == 3) or (uch == 3 and cch == 1):
-        return 0, cch    # user loses
+        return 0, cch,  USERCHOICES   # user loses
     else:
-        return 1, cch    # user wins
+        return 1, cch,  USERCHOICES    # user wins
 
 # ---------------- ROUTES ----------------
 
@@ -44,6 +64,8 @@ def root():
 def scp():
 
     # initialize session values once
+    if "hist" not in session:
+        session['hist']=[]
     if "userscore" not in session:
         session["userscore"] = 0
     if "moves" not in session:
@@ -65,13 +87,13 @@ def scp():
         ch = {"stone": 1, "paper": 2, "scissor": 3}
         chl = ["stone", "paper", "scissor"]
 
-        ans = cvu(ch[uchval])
-
+        ans = cvu(ch[uchval],session.get('hist'),session.get('moves'))
+        session['hist']=ans[2]
         # scoring
         if ans[0] == 1:          # win
             session["userscore"] += 10
         elif ans[0] == -1:      # draw
-            session["userscore"] += 10
+            session["userscore"] += 5
         else:                   # lose
             session["userscore"] -= 5
 
